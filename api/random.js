@@ -10,8 +10,28 @@ function loadThesaurus() {
   thesaurus = {};
   wordList = [];
 
-  const wordsPath = path.join(process.cwd(), 'words.txt');
-  const content = fs.readFileSync(wordsPath, 'utf-8');
+  // Try multiple paths for Vercel compatibility
+  const possiblePaths = [
+    path.join(__dirname, '..', 'words.txt'),
+    path.join(process.cwd(), 'words.txt'),
+    '/var/task/words.txt'
+  ];
+
+  let content = null;
+  for (const p of possiblePaths) {
+    try {
+      if (fs.existsSync(p)) {
+        content = fs.readFileSync(p, 'utf-8');
+        break;
+      }
+    } catch (e) {
+      continue;
+    }
+  }
+
+  if (!content) {
+    throw new Error('Could not find words.txt');
+  }
 
   for (const line of content.split('\n')) {
     const trimmed = line.trim();
@@ -27,19 +47,22 @@ function loadThesaurus() {
 }
 
 module.exports = (req, res) => {
-  loadThesaurus();
+  try {
+    loadThesaurus();
 
-  // Pick a random word
-  const randomIndex = Math.floor(Math.random() * wordList.length);
-  const word = wordList[randomIndex];
-  const wordLower = word.toLowerCase();
-  const synonyms = thesaurus[wordLower] || [];
+    const randomIndex = Math.floor(Math.random() * wordList.length);
+    const word = wordList[randomIndex];
+    const wordLower = word.toLowerCase();
+    const synonyms = thesaurus[wordLower] || [];
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.json({
-    word,
-    synonyms,
-    count: synonyms.length,
-    totalWords: wordList.length
-  });
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json({
+      word,
+      synonyms,
+      count: synonyms.length,
+      totalWords: wordList.length
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
