@@ -53,6 +53,7 @@ function App() {
   const handleSearch = (e) => {
     e.preventDefault();
     fetchSynonyms(searchInput);
+    setSearchInput('');
   };
 
   const handleSynonymClick = (syn) => {
