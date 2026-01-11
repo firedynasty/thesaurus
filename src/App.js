@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 
 // Common words for random selection
@@ -13,12 +13,24 @@ const RANDOM_WORDS = [
   'famous', 'unknown', 'healthy', 'sick', 'happy', 'miserable', 'real', 'fake'
 ];
 
+const AUDIO_URL = "https://www.dropbox.com/scl/fi/ycyxa3oee9kwacgbubc27/Psalms_complete.mp3?rlkey=q9bs72s8630wykdypxlxpzgsw&st=eg1ba594&raw=1";
+
 function App() {
   const [word, setWord] = useState('');
   const [synonyms, setSynonyms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [history, setHistory] = useState([]);
+
+  // Audio player state
+  const audioRef = useRef(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [loopStart, setLoopStart] = useState(0);
+  const [loopEnd, setLoopEnd] = useState(30);
+  const [loopDuration, setLoopDuration] = useState(30);
+  const [repeatCount, setRepeatCount] = useState(50);
+  const [currentRepeat, setCurrentRepeat] = useState(0);
+  const [isLooping, setIsLooping] = useState(false);
 
   const fetchSynonyms = useCallback(async (searchWord, addToHistory = true) => {
     if (!searchWord.trim()) return;
@@ -70,6 +82,46 @@ function App() {
 
   const clearHistory = () => {
     setHistory([]);
+  };
+
+  // Audio player functions
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+
+      // Check if we need to loop
+      if (isLooping && audioRef.current.currentTime >= loopEnd) {
+        if (currentRepeat < repeatCount - 1) {
+          audioRef.current.currentTime = loopStart;
+          setCurrentRepeat(prev => prev + 1);
+        } else {
+          setIsLooping(false);
+          setCurrentRepeat(0);
+        }
+      }
+    }
+  };
+
+  const startLoop = (duration) => {
+    if (audioRef.current) {
+      const start = audioRef.current.currentTime;
+      setLoopStart(start);
+      setLoopEnd(start + duration);
+      setLoopDuration(duration);
+      setCurrentRepeat(0);
+      setIsLooping(true);
+    }
+  };
+
+  const stopLoop = () => {
+    setIsLooping(false);
+    setCurrentRepeat(0);
   };
 
   useEffect(() => {
@@ -143,6 +195,53 @@ function App() {
             </div>
           </>
         )}
+      </div>
+
+      {/* Sticky Audio Player */}
+      <div className="audio-player-sticky">
+        <div className="audio-container">
+          <audio
+            ref={audioRef}
+            id="audio1"
+            controls
+            src={AUDIO_URL}
+            onTimeUpdate={handleTimeUpdate}
+          >
+            Your browser does not support HTML5 Audio!
+          </audio>
+
+          <div className="audio-controls">
+            <span className="time-label">Current: {formatTime(currentTime)}</span>
+
+            <div className="loop-buttons">
+              <button className="loop-timer-btn" onClick={() => startLoop(30)}>30s</button>
+              <button className="loop-timer-btn btn-60s" onClick={() => startLoop(60)}>1m</button>
+              <button className="loop-timer-btn btn-3min" onClick={() => startLoop(180)}>3m</button>
+              {isLooping && <button className="loop-timer-btn btn-stop" onClick={stopLoop}>Stop</button>}
+            </div>
+
+            <div className="repeat-options">
+              <span className="repeat-label">Repeat:</span>
+              {[1, 8, 50].map(count => (
+                <label key={count} className="repeat-option">
+                  <input
+                    type="radio"
+                    name="loopRepeat"
+                    value={count}
+                    checked={repeatCount === count}
+                    onChange={() => setRepeatCount(count)}
+                  /> {count}x
+                </label>
+              ))}
+            </div>
+
+            {isLooping && (
+              <div className="loop-status">
+                Loop: {formatTime(loopStart)} → {formatTime(loopEnd)} | Repeat: {currentRepeat + 1}/{repeatCount}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

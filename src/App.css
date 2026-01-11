@@ -221,6 +221,114 @@ h1 {
   font-size: 12px;
 }
 
+/* Sticky Audio Player */
+.audio-player-sticky {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #0a0a15;
+  border-top: 2px solid #00d9ff;
+  padding: 12px 20px;
+  z-index: 1000;
+}
+
+.audio-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.audio-container audio {
+  width: 100%;
+  height: 40px;
+  margin-bottom: 10px;
+}
+
+.audio-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.audio-controls .time-label {
+  color: #00d9ff;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.loop-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.loop-timer-btn {
+  background: #0f3460;
+  color: #fff;
+  border: 1px solid #1a4980;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.loop-timer-btn:hover {
+  background: #1a4980;
+  border-color: #00d9ff;
+}
+
+.loop-timer-btn.btn-60s {
+  background: #1a4040;
+  border-color: #2a6060;
+}
+
+.loop-timer-btn.btn-3min {
+  background: #401a40;
+  border-color: #602a60;
+}
+
+.loop-timer-btn.btn-stop {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+  color: #000;
+}
+
+.repeat-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.repeat-label {
+  color: #888;
+  font-size: 12px;
+}
+
+.repeat-option {
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.repeat-option input {
+  margin-right: 3px;
+}
+
+.loop-status {
+  color: #ff9f43;
+  font-size: 12px;
+  background: #1a1a2e;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+/* Add padding to container so content isn't hidden behind sticky player */
+.container {
+  padding-bottom: 140px;
+}
+
 /* Scrollbar styling */
 .synonyms-container::-webkit-scrollbar {
   width: 8px;
