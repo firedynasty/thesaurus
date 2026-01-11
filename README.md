@@ -31,4 +31,4 @@ This app is configured for easy deployment to Vercel. Simply connect your reposi
 - `npm start` - Runs the app in development mode
 - `npm run build` - Builds the app for production
 - `npm test` - Launches the test runner
-- `npm run eject` - Ejects from Create React App (one-way operation)
+- `npm run eject` - Ejects from Create React App (one-way operation)# thesaurus
