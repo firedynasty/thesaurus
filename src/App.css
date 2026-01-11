@@ -150,6 +150,77 @@ h1 {
   padding: 20px;
 }
 
+/* History styles */
+.history-container {
+  background: #0f3460;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.history-label {
+  color: #888;
+  font-size: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-clear {
+  background: transparent;
+  border: 1px solid #555;
+  color: #888;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-clear:hover {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.history-chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-item-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-item {
+  background: #1a4980;
+  color: #aaa;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.history-item:hover {
+  background: #2a5a90;
+  color: #fff;
+}
+
+.history-item.active {
+  background: #00d9ff;
+  color: #000;
+}
+
+.history-arrow {
+  color: #555;
+  font-size: 12px;
+}
+
 /* Scrollbar styling */
 .synonyms-container::-webkit-scrollbar {
   width: 8px;

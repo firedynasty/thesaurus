@@ -18,14 +18,20 @@ function App() {
   const [synonyms, setSynonyms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [history, setHistory] = useState([]);
 
-  const fetchSynonyms = useCallback(async (searchWord) => {
+  const fetchSynonyms = useCallback(async (searchWord, addToHistory = true) => {
     if (!searchWord.trim()) return;
     setLoading(true);
-    setWord(searchWord.toLowerCase());
+    const normalizedWord = searchWord.toLowerCase();
+    setWord(normalizedWord);
+
+    // Add to history if not already the last item
+    if (addToHistory && (history.length === 0 || history[history.length - 1] !== normalizedWord)) {
+      setHistory(prev => [...prev, normalizedWord]);
+    }
 
     try {
-      // Datamuse API - ml = "means like" (synonyms)
       const res = await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(searchWord)}&max=100`);
       const data = await res.json();
       setSynonyms(data.map(item => item.word));
@@ -34,12 +40,14 @@ function App() {
       setSynonyms([]);
     }
     setLoading(false);
-  }, []);
+  }, [history]);
 
   const fetchRandom = useCallback(() => {
     const randomWord = RANDOM_WORDS[Math.floor(Math.random() * RANDOM_WORDS.length)];
     setSearchInput(randomWord);
-    fetchSynonyms(randomWord);
+    setHistory([]); // Clear history on random
+    fetchSynonyms(randomWord, false);
+    setHistory([randomWord]);
   }, [fetchSynonyms]);
 
   const handleSearch = (e) => {
@@ -52,9 +60,21 @@ function App() {
     fetchSynonyms(syn);
   };
 
+  const handleHistoryClick = (histWord, index) => {
+    // Truncate history to this point
+    setHistory(prev => prev.slice(0, index + 1));
+    setSearchInput(histWord);
+    fetchSynonyms(histWord, false);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+  };
+
   useEffect(() => {
     fetchRandom();
-  }, [fetchRandom]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="App">
@@ -73,6 +93,28 @@ function App() {
           <button type="submit" className="btn btn-primary">Search</button>
           <button type="button" onClick={fetchRandom} className="btn btn-secondary">Random</button>
         </form>
+
+        {history.length > 0 && (
+          <div className="history-container">
+            <div className="history-label">
+              History:
+              <button className="btn-clear" onClick={clearHistory}>Clear</button>
+            </div>
+            <div className="history-chain">
+              {history.map((histWord, idx) => (
+                <span key={idx} className="history-item-wrapper">
+                  <span
+                    className={`history-item ${histWord === word ? 'active' : ''}`}
+                    onClick={() => handleHistoryClick(histWord, idx)}
+                  >
+                    {histWord}
+                  </span>
+                  {idx < history.length - 1 && <span className="history-arrow">→</span>}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="loading">Loading...</div>
