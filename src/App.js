@@ -180,6 +180,9 @@ function App() {
     if (audioRef.current) {
       const seconds = parseTimestamp(PSALMS_TIMESTAMPS[psalmIndex][1]);
       audioRef.current.currentTime = seconds;
+      if (audioRef.current.paused) {
+        audioRef.current.play();
+      }
     }
   };
 
@@ -189,6 +192,15 @@ function App() {
 
   const nextPsalm = () => {
     setPsalmIndex(prev => (prev < PSALMS_TIMESTAMPS.length - 1 ? prev + 1 : 0));
+  };
+
+  const skipPsalm = (amount) => {
+    setPsalmIndex(prev => {
+      const newIndex = prev + amount;
+      if (newIndex < 0) return 0;
+      if (newIndex >= PSALMS_TIMESTAMPS.length) return PSALMS_TIMESTAMPS.length - 1;
+      return newIndex;
+    });
   };
 
   useEffect(() => {
@@ -310,12 +322,16 @@ function App() {
           </div>
 
           <div className="psalm-navigation">
+            <button className="psalm-skip-btn" onClick={() => skipPsalm(-20)}>-20</button>
+            <button className="psalm-skip-btn" onClick={() => skipPsalm(-10)}>-10</button>
             <button className="psalm-arrow" onClick={prevPsalm}>◀</button>
             <div className="psalm-display">
               <span className="psalm-name">{PSALMS_TIMESTAMPS[psalmIndex][0]}</span>
               <span className="psalm-time">{PSALMS_TIMESTAMPS[psalmIndex][1]}</span>
             </div>
             <button className="psalm-arrow" onClick={nextPsalm}>▶</button>
+            <button className="psalm-skip-btn" onClick={() => skipPsalm(10)}>+10</button>
+            <button className="psalm-skip-btn" onClick={() => skipPsalm(20)}>+20</button>
             <button className="psalm-go-btn" onClick={goToPsalm}>Go</button>
           </div>
         </div>

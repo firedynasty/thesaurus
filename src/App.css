@@ -396,6 +396,24 @@ h1 {
   background: #2ecc71;
 }
 
+.psalm-skip-btn {
+  background: #1a1a2e;
+  color: #888;
+  border: 1px solid #333;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.psalm-skip-btn:hover {
+  background: #0f3460;
+  color: #00d9ff;
+  border-color: #1a4980;
+}
+
 /* Scrollbar styling */
 .synonyms-container::-webkit-scrollbar {
   width: 8px;
