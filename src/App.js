@@ -27,7 +27,6 @@ function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const [loopStart, setLoopStart] = useState(0);
   const [loopEnd, setLoopEnd] = useState(30);
-  const [loopDuration, setLoopDuration] = useState(30);
   const [repeatCount, setRepeatCount] = useState(50);
   const [currentRepeat, setCurrentRepeat] = useState(0);
   const [isLooping, setIsLooping] = useState(false);
@@ -113,7 +112,6 @@ function App() {
       const start = audioRef.current.currentTime;
       setLoopStart(start);
       setLoopEnd(start + duration);
-      setLoopDuration(duration);
       setCurrentRepeat(0);
       setIsLooping(true);
     }
