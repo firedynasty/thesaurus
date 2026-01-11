@@ -1,40 +1,46 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
+// Common words for random selection
+const RANDOM_WORDS = [
+  'happy', 'sad', 'fast', 'slow', 'big', 'small', 'bright', 'dark',
+  'strong', 'weak', 'rich', 'poor', 'hot', 'cold', 'new', 'old',
+  'good', 'bad', 'love', 'hate', 'begin', 'end', 'create', 'destroy',
+  'beautiful', 'ugly', 'smart', 'brave', 'calm', 'angry', 'gentle', 'rough',
+  'honest', 'clever', 'kind', 'cruel', 'proud', 'humble', 'simple', 'complex',
+  'ancient', 'modern', 'quiet', 'loud', 'empty', 'full', 'hard', 'soft',
+  'clean', 'dirty', 'safe', 'dangerous', 'easy', 'difficult', 'free', 'busy',
+  'famous', 'unknown', 'healthy', 'sick', 'happy', 'miserable', 'real', 'fake'
+];
+
 function App() {
   const [word, setWord] = useState('');
   const [synonyms, setSynonyms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState('');
-  const [totalWords, setTotalWords] = useState(0);
 
-  const fetchRandom = useCallback(async () => {
+  const fetchSynonyms = useCallback(async (searchWord) => {
+    if (!searchWord.trim()) return;
     setLoading(true);
+    setWord(searchWord.toLowerCase());
+
     try {
-      const res = await fetch('/api/random');
+      // Datamuse API - ml = "means like" (synonyms)
+      const res = await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(searchWord)}&max=100`);
       const data = await res.json();
-      setWord(data.word);
-      setSynonyms(data.synonyms);
-      setTotalWords(data.totalWords);
+      setSynonyms(data.map(item => item.word));
     } catch (err) {
-      console.error('Error fetching random word:', err);
+      console.error('Error fetching synonyms:', err);
+      setSynonyms([]);
     }
     setLoading(false);
   }, []);
 
-  const fetchSynonyms = async (searchWord) => {
-    if (!searchWord.trim()) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/synonyms?word=${encodeURIComponent(searchWord)}`);
-      const data = await res.json();
-      setWord(data.word);
-      setSynonyms(data.synonyms);
-    } catch (err) {
-      console.error('Error fetching synonyms:', err);
-    }
-    setLoading(false);
-  };
+  const fetchRandom = useCallback(() => {
+    const randomWord = RANDOM_WORDS[Math.floor(Math.random() * RANDOM_WORDS.length)];
+    setSearchInput(randomWord);
+    fetchSynonyms(randomWord);
+  }, [fetchSynonyms]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -54,7 +60,7 @@ function App() {
     <div className="App">
       <div className="container">
         <h1>THESAURUS</h1>
-        <div className="subtitle">Moby Thesaurus - {totalWords.toLocaleString()} words</div>
+        <div className="subtitle">Powered by Datamuse API</div>
 
         <form onSubmit={handleSearch} className="search-form">
           <input
@@ -74,7 +80,7 @@ function App() {
           <>
             <div className="word-display">
               <span className="current-word">{word}</span>
-              <span className="count">({synonyms.length} synonyms)</span>
+              <span className="count">({synonyms.length} results)</span>
             </div>
 
             <div className="synonyms-container">
