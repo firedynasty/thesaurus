@@ -63,6 +63,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [history, setHistory] = useState([]);
+  const [deleteMode, setDeleteMode] = useState(false);
 
   // Audio player state
   const audioRef = useRef(null);
@@ -116,10 +117,14 @@ function App() {
   };
 
   const handleHistoryClick = (histWord, index) => {
-    // Truncate history to this point
-    setHistory(prev => prev.slice(0, index + 1));
-    setSearchInput(histWord);
-    fetchSynonyms(histWord, false);
+    if (deleteMode) {
+      // Delete mode: remove this item from history
+      setHistory(prev => prev.filter((_, i) => i !== index));
+    } else {
+      // Navigate mode: load synonyms without modifying history
+      setSearchInput(histWord);
+      fetchSynonyms(histWord, false);
+    }
   };
 
   const clearHistory = () => {
@@ -227,10 +232,21 @@ function App() {
         </form>
 
         {history.length > 0 && (
-          <div className="history-container">
+          <div className={`history-container ${deleteMode ? 'delete-mode' : ''}`}>
             <div className="history-label">
               History:
-              <button className="btn-clear" onClick={clearHistory}>Clear</button>
+              <div className="history-controls">
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={deleteMode}
+                    onChange={(e) => setDeleteMode(e.target.checked)}
+                  />
+                  <span className="slider"></span>
+                </label>
+                <span className="toggle-label">{deleteMode ? 'Delete (or Navigate)' : 'Navigate (or Delete)'}</span>
+                <button className="btn-clear" onClick={clearHistory}>Clear</button>
+              </div>
             </div>
             <div className="history-chain">
               {history.map((histWord, idx) => (
