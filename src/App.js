@@ -286,7 +286,8 @@ function App() {
         setAuthError('Invalid access code');
       }
     } catch (err) {
-      setAuthError('Connection error');
+      console.error('Auth error:', err);
+      setAuthError('Connection error: ' + err.message);
     }
   };
 
