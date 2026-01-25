@@ -65,6 +65,14 @@ function App() {
   const [history, setHistory] = useState([]);
   const [deleteMode, setDeleteMode] = useState(false);
 
+  // Access code state
+  const [accessCode, setAccessCode] = useState('');
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [showAccessInput, setShowAccessInput] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const saveTimeoutRef = useRef(null);
+
   // Audio player state
   const audioRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -208,6 +216,85 @@ function App() {
     });
   };
 
+  // Access code / history sync functions
+  const handleUnlock = async () => {
+    setAuthError('');
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessCode })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsUnlocked(true);
+        setShowAccessInput(false);
+        // Load history from server
+        loadHistory();
+      } else {
+        setAuthError('Invalid access code');
+      }
+    } catch (err) {
+      setAuthError('Connection error');
+    }
+  };
+
+  const loadHistory = async () => {
+    try {
+      const res = await fetch(`/api/history?accessCode=${encodeURIComponent(accessCode)}`);
+      const data = await res.json();
+      if (data.history && data.history.length > 0) {
+        setHistory(data.history);
+        // Navigate to the last word in history
+        const lastWord = data.history[data.history.length - 1];
+        setSearchInput(lastWord);
+        fetchSynonyms(lastWord, false);
+      }
+      setHistoryLoaded(true);
+    } catch (err) {
+      console.error('Failed to load history:', err);
+      setHistoryLoaded(true);
+    }
+  };
+
+  const saveHistory = useCallback(async (historyToSave) => {
+    if (!isUnlocked || !accessCode) return;
+    try {
+      await fetch('/api/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ history: historyToSave, accessCode })
+      });
+    } catch (err) {
+      console.error('Failed to save history:', err);
+    }
+  }, [isUnlocked, accessCode]);
+
+  // Debounced save when history changes
+  useEffect(() => {
+    if (!isUnlocked || !historyLoaded) return;
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      saveHistory(history);
+    }, 1000);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [history, isUnlocked, historyLoaded, saveHistory]);
+
+  const handleLock = () => {
+    setIsUnlocked(false);
+    setAccessCode('');
+    setHistoryLoaded(false);
+  };
+
   useEffect(() => {
     fetchRandom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -230,6 +317,34 @@ function App() {
           <button type="submit" className="btn btn-primary">Search</button>
           <button type="button" onClick={fetchRandom} className="btn btn-secondary">Random</button>
         </form>
+
+        {/* Access Code Section */}
+        <div className="access-section">
+          {!isUnlocked ? (
+            showAccessInput ? (
+              <div className="access-input-container">
+                <input
+                  type="password"
+                  value={accessCode}
+                  onChange={(e) => setAccessCode(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
+                  placeholder="Enter access code..."
+                  className="access-input"
+                />
+                <button onClick={handleUnlock} className="btn btn-unlock">Unlock</button>
+                <button onClick={() => { setShowAccessInput(false); setAuthError(''); }} className="btn btn-cancel">Cancel</button>
+                {authError && <span className="auth-error">{authError}</span>}
+              </div>
+            ) : (
+              <button onClick={() => setShowAccessInput(true)} className="btn btn-lock">Unlock History Sync</button>
+            )
+          ) : (
+            <div className="unlocked-status">
+              <span className="unlocked-badge">History Synced</span>
+              <button onClick={handleLock} className="btn btn-lock-small">Lock</button>
+            </div>
+          )}
+        </div>
 
         {history.length > 0 && (
           <div className={`history-container ${deleteMode ? 'delete-mode' : ''}`}>

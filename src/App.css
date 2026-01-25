@@ -291,6 +291,94 @@ h1 {
   cursor: crosshair;
 }
 
+/* Access Code Section */
+.access-section {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+}
+
+.access-input-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.access-input {
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #0a0a15;
+  border: 2px solid #333;
+  color: #fff;
+  border-radius: 5px;
+  width: 160px;
+}
+
+.access-input:focus {
+  outline: none;
+  border-color: #27ae60;
+}
+
+.btn-unlock {
+  background: #27ae60;
+  color: #fff;
+  padding: 8px 16px;
+}
+
+.btn-cancel {
+  background: #333;
+  color: #888;
+  padding: 8px 12px;
+}
+
+.btn-lock {
+  background: transparent;
+  border: 1px solid #555;
+  color: #888;
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.btn-lock:hover {
+  border-color: #27ae60;
+  color: #27ae60;
+}
+
+.btn-lock-small {
+  background: transparent;
+  border: 1px solid #555;
+  color: #888;
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.btn-lock-small:hover {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.unlocked-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.unlocked-badge {
+  background: #27ae60;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.auth-error {
+  color: #ff6b6b;
+  font-size: 12px;
+}
+
 /* Sticky Audio Player */
 .audio-player-sticky {
   position: fixed;
