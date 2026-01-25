@@ -73,6 +73,9 @@ function App() {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const saveTimeoutRef = useRef(null);
 
+  // Detect localhost for development mode
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
   // Audio player state
   const audioRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -219,6 +222,16 @@ function App() {
   // Access code / history sync functions
   const handleUnlock = async () => {
     setAuthError('');
+
+    // On localhost, use localStorage (no API needed)
+    if (isLocalhost) {
+      setIsUnlocked(true);
+      setShowAccessInput(false);
+      setAccessCode('localhost');
+      loadHistory();
+      return;
+    }
+
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
@@ -240,6 +253,26 @@ function App() {
   };
 
   const loadHistory = async () => {
+    // On localhost, use localStorage
+    if (isLocalhost) {
+      const stored = localStorage.getItem('thesaurus-history');
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          if (data.history && data.history.length > 0) {
+            setHistory(data.history);
+            const lastWord = data.history[data.history.length - 1];
+            setSearchInput(lastWord);
+            fetchSynonyms(lastWord, false);
+          }
+        } catch (e) {
+          console.error('Failed to parse localStorage history:', e);
+        }
+      }
+      setHistoryLoaded(true);
+      return;
+    }
+
     try {
       const res = await fetch(`/api/history?accessCode=${encodeURIComponent(accessCode)}`);
       const data = await res.json();
@@ -258,7 +291,18 @@ function App() {
   };
 
   const saveHistory = useCallback(async (historyToSave) => {
-    if (!isUnlocked || !accessCode) return;
+    if (!isUnlocked) return;
+
+    // On localhost, use localStorage
+    if (isLocalhost) {
+      localStorage.setItem('thesaurus-history', JSON.stringify({
+        history: historyToSave,
+        updatedAt: new Date().toISOString()
+      }));
+      return;
+    }
+
+    if (!accessCode) return;
     try {
       await fetch('/api/history', {
         method: 'POST',
@@ -268,7 +312,7 @@ function App() {
     } catch (err) {
       console.error('Failed to save history:', err);
     }
-  }, [isUnlocked, accessCode]);
+  }, [isUnlocked, accessCode, isLocalhost]);
 
   // Debounced save when history changes
   useEffect(() => {
@@ -321,7 +365,9 @@ function App() {
         {/* Access Code Section */}
         <div className="access-section">
           {!isUnlocked ? (
-            showAccessInput ? (
+            isLocalhost ? (
+              <button onClick={handleUnlock} className="btn btn-lock">Unlock History Sync (Local)</button>
+            ) : showAccessInput ? (
               <div className="access-input-container">
                 <input
                   type="password"
@@ -340,7 +386,7 @@ function App() {
             )
           ) : (
             <div className="unlocked-status">
-              <span className="unlocked-badge">History Synced</span>
+              <span className="unlocked-badge">{isLocalhost ? 'History Synced (Local)' : 'History Synced'}</span>
               <button onClick={handleLock} className="btn btn-lock-small">Lock</button>
             </div>
           )}
