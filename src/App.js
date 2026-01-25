@@ -220,39 +220,7 @@ function App() {
   };
 
   // Access code / history sync functions
-  const handleUnlock = async () => {
-    setAuthError('');
-
-    // On localhost, use localStorage (no API needed)
-    if (isLocalhost) {
-      setIsUnlocked(true);
-      setShowAccessInput(false);
-      setAccessCode('localhost');
-      loadHistory();
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessCode })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsUnlocked(true);
-        setShowAccessInput(false);
-        // Load history from server
-        loadHistory();
-      } else {
-        setAuthError('Invalid access code');
-      }
-    } catch (err) {
-      setAuthError('Connection error');
-    }
-  };
-
-  const loadHistory = async () => {
+  const loadHistory = async (code) => {
     // On localhost, use localStorage
     if (isLocalhost) {
       const stored = localStorage.getItem('thesaurus-history');
@@ -274,7 +242,7 @@ function App() {
     }
 
     try {
-      const res = await fetch(`/api/history?accessCode=${encodeURIComponent(accessCode)}`);
+      const res = await fetch(`/api/history?accessCode=${encodeURIComponent(code)}`);
       const data = await res.json();
       if (data.history && data.history.length > 0) {
         setHistory(data.history);
@@ -287,6 +255,38 @@ function App() {
     } catch (err) {
       console.error('Failed to load history:', err);
       setHistoryLoaded(true);
+    }
+  };
+
+  const handleUnlock = async () => {
+    setAuthError('');
+
+    // On localhost, use localStorage (no API needed)
+    if (isLocalhost) {
+      setIsUnlocked(true);
+      setShowAccessInput(false);
+      setAccessCode('localhost');
+      loadHistory('localhost');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessCode })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsUnlocked(true);
+        setShowAccessInput(false);
+        // Load history from server - pass the code directly since state is async
+        loadHistory(accessCode);
+      } else {
+        setAuthError('Invalid access code');
+      }
+    } catch (err) {
+      setAuthError('Connection error');
     }
   };
 
