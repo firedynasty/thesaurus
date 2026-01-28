@@ -73,6 +73,11 @@ function App() {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const saveTimeoutRef = useRef(null);
 
+  // Cloud Notes state
+  const [showCloudNotes, setShowCloudNotes] = useState(false);
+  const [cloudNotesContent, setCloudNotesContent] = useState('');
+  const [cloudNotesStatus, setCloudNotesStatus] = useState('');
+
   // Detect localhost for development mode
   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
@@ -340,6 +345,45 @@ function App() {
     setHistoryLoaded(false);
   };
 
+  // Cloud Notes functions
+  const loadCloudNotes = async () => {
+    setCloudNotesStatus('Loading...');
+    try {
+      const res = await fetch('/api/files');
+      if (res.ok) {
+        const data = await res.json();
+        setCloudNotesContent(data.files?.['cloud_notes.txt'] || '');
+        setCloudNotesStatus('Loaded');
+      } else {
+        setCloudNotesStatus('Load failed');
+      }
+    } catch (err) {
+      setCloudNotesStatus('Error: ' + err.message);
+    }
+  };
+
+  const saveCloudNotes = async () => {
+    setCloudNotesStatus('Saving...');
+    try {
+      const res = await fetch('/api/files', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: 'cloud_notes.txt',
+          content: cloudNotesContent,
+          accessCode: '123'
+        })
+      });
+      if (res.ok) {
+        setCloudNotesStatus('Saved');
+      } else {
+        setCloudNotesStatus('Save failed');
+      }
+    } catch (err) {
+      setCloudNotesStatus('Save failed');
+    }
+  };
+
   useEffect(() => {
     fetchRandom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -389,6 +433,31 @@ function App() {
             <div className="unlocked-status">
               <span className="unlocked-badge">{isLocalhost ? 'History Synced (Local)' : 'History Synced'}</span>
               <button onClick={handleLock} className="btn btn-lock-small">Lock</button>
+            </div>
+          )}
+        </div>
+
+        {/* Cloud Notes Section */}
+        <div className="cloud-notes-section">
+          <button
+            onClick={() => setShowCloudNotes(!showCloudNotes)}
+            className="btn btn-cloud-notes"
+          >
+            Cloud Notes
+          </button>
+          {showCloudNotes && (
+            <div className="cloud-notes-container">
+              <div className="cloud-notes-controls">
+                <button onClick={loadCloudNotes} className="btn btn-load">Load</button>
+                <button onClick={saveCloudNotes} className="btn btn-save">Save</button>
+                {cloudNotesStatus && <span className="cloud-notes-status">{cloudNotesStatus}</span>}
+              </div>
+              <textarea
+                value={cloudNotesContent}
+                onChange={(e) => setCloudNotesContent(e.target.value)}
+                placeholder="Your cloud notes..."
+                className="cloud-notes-textarea"
+              />
             </div>
           )}
         </div>
