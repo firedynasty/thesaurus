@@ -124,7 +124,20 @@ function App() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchSynonyms(searchInput);
+    // Split by comma or semicolon to handle multiple words
+    const words = searchInput.split(/[,;]/).map(w => w.trim().toLowerCase()).filter(w => w);
+
+    if (words.length === 0) return;
+
+    if (words.length === 1) {
+      // Single word - normal behavior
+      fetchSynonyms(words[0]);
+    } else {
+      // Multiple words - add all to history, fetch synonyms for last one
+      setHistory(prev => [...prev, ...words.filter(w => prev[prev.length - 1] !== w)]);
+      setWord(words[words.length - 1]);
+      fetchSynonyms(words[words.length - 1], false);
+    }
     setSearchInput('');
   };
 
@@ -405,7 +418,7 @@ function App() {
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search for a word..."
+            placeholder="Search word... or new;great;fun"
             className="search-input"
           />
           <button type="submit" className="btn btn-primary">Search</button>
