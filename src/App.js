@@ -412,6 +412,7 @@ function App() {
       <div className="container">
         <h1>THESAURUS</h1>
         <div className="subtitle">Powered by Datamuse API</div>
+        <div className="subtitle">search word, or new;fun,great</div>
 
         <form onSubmit={handleSearch} className="search-form">
           <input
