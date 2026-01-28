@@ -627,6 +627,22 @@ h1 {
   flex-wrap: wrap;
 }
 
+.cloud-notes-code-input {
+  width: 70px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #1a1a2e;
+  border: 2px solid #ff9800;
+  border-radius: 5px;
+  color: #fff;
+  outline: none;
+}
+
+.cloud-notes-code-input:focus {
+  border-color: #ffc107;
+}
+
 .btn-load {
   background: #2196F3;
   color: #fff;

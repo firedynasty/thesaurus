@@ -77,6 +77,7 @@ function App() {
   const [showCloudNotes, setShowCloudNotes] = useState(false);
   const [cloudNotesContent, setCloudNotesContent] = useState('');
   const [cloudNotesStatus, setCloudNotesStatus] = useState('');
+  const [cloudNotesCode, setCloudNotesCode] = useState('');
 
   // Detect localhost for development mode
   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -363,6 +364,10 @@ function App() {
   };
 
   const saveCloudNotes = async () => {
+    if (!cloudNotesCode) {
+      setCloudNotesStatus('Enter code');
+      return;
+    }
     setCloudNotesStatus('Saving...');
     try {
       const res = await fetch('/api/files', {
@@ -371,7 +376,7 @@ function App() {
         body: JSON.stringify({
           filename: 'cloud_notes.txt',
           content: cloudNotesContent,
-          accessCode: '123'
+          accessCode: cloudNotesCode
         })
       });
       if (res.ok) {
@@ -448,6 +453,13 @@ function App() {
           {showCloudNotes && (
             <div className="cloud-notes-container">
               <div className="cloud-notes-controls">
+                <input
+                  type="text"
+                  value={cloudNotesCode}
+                  onChange={(e) => setCloudNotesCode(e.target.value)}
+                  placeholder="123"
+                  className="cloud-notes-code-input"
+                />
                 <button onClick={loadCloudNotes} className="btn btn-load">Load</button>
                 <button onClick={saveCloudNotes} className="btn btn-save">Save</button>
                 {cloudNotesStatus && <span className="cloud-notes-status">{cloudNotesStatus}</span>}
